@@ -7,46 +7,52 @@ import "@chainlink/contracts/src/v0.8/vrf/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 
 contract MyNFT is ERC721URIStorage, Ownable(msg.sender), VRFConsumerBaseV2 {
-    VRFCoordinatorV2Interface COORDINATOR;
+    VRFCoordinatorV2Interface private COORDINATOR;
+    uint256 private s_subscriptionId;
+    uint256 private tokenCounter;
+    bytes32 private keyHash;
+    uint256 private callbackGasLimit;
+    uint256 private requestConfirmations;
+    uint256 private numWords;
 
-    // VRF Variables
-    uint64 s_subscriptionId;
-    address vrfCoordinator = 0x8103B0A8A00be2DDC778e6e7eaa21791Cd364625 ;
-    bytes32 keyHash = 0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c ;
-    uint32 callbackGasLimit = 100000;
-    uint16 requestConfirmations = 3;
-    uint32 numWords =  1;
+    mapping(uint256 => uint256) private tokenIdToRandomNumber;
 
-    // Mapping from token ID to the random number
-    mapping(uint256 => uint256) public tokenIdToRandomNumber;
-    uint256 public tokenCounter;
-
-    // Events
-    event RequestedRandomness(uint256 requestId, uint256 tokenId);
+    event RequestedRandomness(uint256 requestId, uint256 tokenId, address requester);
     event MintedNFT(uint256 tokenId, uint256 randomNumber);
 
-    constructor(uint64 subscriptionId) 
-        VRFConsumerBaseV2(vrfCoordinator)
-        ERC721("MyNFT", "MNFT") {
-            COORDINATOR = VRFCoordinatorV2Interface(vrfCoordinator);
-            s_subscriptionId = subscriptionId;
-            tokenCounter = 5;
+    constructor(uint256 subscriptionId, address _vrfCoordinator, bytes32 _keyHash, uint256 _callbackGasLimit, uint256 _requestConfirmations, uint256 _numWords) 
+        ERC721("MyNFT", "MNFT")
+        VRFConsumerBaseV2(_vrfCoordinator)
+    {
+        s_subscriptionId = subscriptionId;
+        COORDINATOR = VRFCoordinatorV2Interface(_vrfCoordinator);
+        keyHash = _keyHash;
+        callbackGasLimit = _callbackGasLimit;
+        requestConfirmations = _requestConfirmations;
+        numWords = _numWords;
+        tokenCounter = 0;
     }
 
-    function requestNewRandomNFT(string memory tokenURI) public onlyOwner {
-        uint256 tokenId = tokenCounter;
-        uint256 requestId = COORDINATOR.requestRandomWords(
-            keyHash,
-            s_subscriptionId,
-            requestConfirmations,
-            callbackGasLimit,
-            numWords
-        );
-        emit RequestedRandomness(requestId, tokenId);
-        _safeMint(msg.sender, tokenId);
-        _setTokenURI(tokenId, tokenURI);
-        tokenCounter += 1;
-    }
+function requestNewRandomNFT(string memory tokenURI) external onlyOwner {
+    uint256 tokenId = tokenCounter;
+    uint64 subscriptionId64 = uint64(s_subscriptionId); // Converti uint256 in uint64
+    uint16 requestConfirmations16 = uint16(requestConfirmations); // Converti uint256 in uint16
+    uint32 callbackGasLimit32 = uint32(callbackGasLimit); // Converti uint256 in uint32
+    uint32 numWords32 = uint32(numWords); // Converti uint256 in uint32
+
+    uint256 requestId = COORDINATOR.requestRandomWords(
+        keyHash,
+        subscriptionId64, // Utilizza la conversione esplicita
+        requestConfirmations16, // Utilizza la conversione esplicita
+        callbackGasLimit32, // Utilizza la conversione esplicita
+        numWords32 // Utilizza la conversione esplicita
+    );
+
+    emit RequestedRandomness(requestId, tokenId, msg.sender);
+    _safeMint(msg.sender, tokenId);
+    _setTokenURI(tokenId, tokenURI);
+    tokenCounter++;
+}
 
     function fulfillRandomWords(uint256 requestId, uint256[] memory randomWords) internal override {
         uint256 tokenId = tokenCounter - 1;
@@ -54,4 +60,7 @@ contract MyNFT is ERC721URIStorage, Ownable(msg.sender), VRFConsumerBaseV2 {
         emit MintedNFT(tokenId, randomWords[0]);
     }
 
+    function getTokenRandomNumber(uint256 tokenId) external view returns (uint256) {
+        return tokenIdToRandomNumber[tokenId];
+    }
 }
