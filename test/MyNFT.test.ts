@@ -1,42 +1,52 @@
 import { ethers } from "hardhat";
-import { Signer } from "ethers";
-import { MyNFT } from "../artifacts/contracts";
+import { expect } from "chai";
+import { MyNFT } from "../typechain-types"; // Assicurati che il percorso sia corretto per i tuoi file generati
 
-async function main() {
-  const [deployer]: Signer[] = await ethers.getSigners();
+describe("MyNFT", function () {
+  let myNft: MyNFT;
+  let owner: any;
+  let addr1: any;
+  let addrs: any;
 
-  console.log("Deploying contracts...");
-  const MyNFTFactory = await ethers.getContractFactory("MyNFT", deployer);
-  const subscriptionId = 10060; // Imposta il valore della subscriptionId
-  const vrfCoordinator = "0x8103b0a8a00be2ddc778e6e7eaa21791cd364625"; // Imposta l'indirizzo del VRFCoordinator
-  const keyHash = "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c"; // Imposta il valore del keyHash
-  const callbackGasLimit = 100000; // Imposta il valore del callbackGasLimit
-  const requestConfirmations = 3; // Imposta il valore del requestConfirmations
-  const numWords = 1; // Imposta il valore del numWords
+  beforeEach(async function () {
+    // Recupera gli account dal provider
+    [owner, addr1, ...addrs] = await ethers.getSigners();
 
-  const myNFT: MyNFT = await MyNFTFactory.deploy(
-    subscriptionId,
-    vrfCoordinator,
-    keyHash,
-    callbackGasLimit,
-    requestConfirmations,
-    numWords
-  );
-
-  await myNFT.waitForDeployment();
-
-  console.log("MyNFT deployed to:", myNFT.getAddress());
-
-  console.log("Minting new NFT...");
-  const tokenURI = "https://example.com/metadata"; // URI del metadata del tuo token
-  await myNFT.connect(deployer).requestNewRandomNFT(tokenURI);
-
-  console.log("NFT minted successfully!");
-}
-
-main()
-  .then(() => process.exit(0))
-  .catch(error => {
-    console.error(error);
-    process.exit(1);
+    // Qui, si presuppone che il contratto sia già deployato. Sostituisci 'myNftAddress' con l'indirizzo del tuo contratto deployato
+    const myNftAddress = "inserisci_qui_l_indirizzo_del_contratto";
+    myNft = await ethers.getContractAt("MyNFT", myNftAddress) as MyNFT;
   });
+
+  describe("Minting", function () {
+    it("Should mint an NFT to the owner", async function () {
+      const tokenURI = "http://mytokenlocation.com";
+      await myNft.requestNewRandomNFT(tokenURI);
+      expect(await myNft.ownerOf(0)).to.equal(owner.address);
+    });
+  });
+
+  describe("Transferring", function () {
+    it("Should transfer an NFT from owner to another account", async function () {
+      const tokenURI = "http://mytokenlocation.com";
+      await myNft.requestNewRandomNFT(tokenURI);
+
+      // Prima del trasferimento
+      expect(await myNft.ownerOf(0)).to.equal(owner.address);
+
+      // Trasferimento
+      await myNft["safeTransferFrom(address,address,uint256)"](owner.address, addr1.address, 0);
+
+      // Dopo il trasferimento
+      expect(await myNft.ownerOf(0)).to.equal(addr1.address);
+    });
+
+    it("Should fail if non-owner tries to transfer an NFT", async function () {
+      const tokenURI = "http://mytokenlocation.com";
+      await myNft.requestNewRandomNFT(tokenURI);
+
+      // Tentativo di trasferimento da un account che non è il proprietario
+      await expect(myNft.connect(addr1)["safeTransferFrom(address,address,uint256)"](owner.address, addr1.address, 0))
+        .to.be.revertedWith("ERC721: transfer caller is not owner nor approved");
+    });
+  });
+});
