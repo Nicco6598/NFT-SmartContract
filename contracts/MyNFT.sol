@@ -11,15 +11,18 @@ contract MyNFT is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
     uint64 private immutable i_subscriptionId;
     bytes32 private immutable i_gasLane;
     uint32 private immutable i_callbackGasLimit;
+    uint256 private immutable i_mintFee;
+    uint256 private immutable i_maxTokens; // Variabile per il numero massimo di token
+
     uint16 private constant REQUEST_CONFIRMATIONS = 3;
     uint32 private constant NUM_WORDS = 1;
     uint32 private constant NUMBER_OF_METADATA = 3;
     mapping(uint256 => address) public s_requestIdToSender;
     uint256 public s_tokenCounter;
-    uint256 internal i_mintFee;
 
     error RandomIpfsNft_InsufficientETHSent();
     error RandomIpfsNft_TransferFailed();
+    error MaxTokensReached(); // Errore se il numero massimo di token è stato raggiunto
 
     event NftRequestedWithNewIdFromVRF(uint256 requestId, address senderAddress);
     event NFTMinted(uint256 newTokenID, address nftOwner);
@@ -29,10 +32,11 @@ contract MyNFT is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
         uint64 subscriptionId,
         bytes32 gasLane,
         uint32 callbackGasLimit,
-        uint256 mintFee
+        uint256 mintFee,
+        uint256 maxTokens // Parametro per il numero massimo di token
     )
         VRFConsumerBaseV2(vrfCoordinatorV2)
-        ERC721('Random On Chain NFT', 'RR')
+        ERC721('MyNFT Yoga', 'mNFTY')
         Ownable(msg.sender)
     {
         i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
@@ -40,9 +44,13 @@ contract MyNFT is VRFConsumerBaseV2, ERC721URIStorage, Ownable {
         i_subscriptionId = subscriptionId;
         i_callbackGasLimit = callbackGasLimit;
         i_mintFee = mintFee;
+        i_maxTokens = maxTokens; // Assegnazione del numero massimo di token
     }
 
     function requestNft() public payable returns (uint256 requestId) {
+        if (s_tokenCounter >= i_maxTokens) {
+            revert MaxTokensReached(); // Controllo per il numero massimo di token
+        }
         if (msg.value < i_mintFee) {
             revert RandomIpfsNft_InsufficientETHSent();
         }
