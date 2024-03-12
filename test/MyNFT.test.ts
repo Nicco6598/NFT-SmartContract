@@ -1,27 +1,35 @@
-import { ethers } from "hardhat";
-import { expect } from "chai";
-import { MyNFT } from "../typechain-types"; // Assicurati che il percorso sia corretto per i tuoi file generati
+import { ethers, network } from 'hardhat';
+import { expect } from 'chai';
+import { MyNFT, VRFCoordinatorV2Mock } from '../typechain-types';
+import { SignerWithAddress } from '@nomicfoundation/hardhat-ethers/signers';
 
-describe("MyNFT", function () {
-  let myNft: MyNFT;
-  let owner: any;
+describe('MyNFT', function () {
+  let MyNFT: MyNFT;
+  let vrfCoordinatorV2Mock: VRFCoordinatorV2Mock;
+  let owner: SignerWithAddress, addr1: SignerWithAddress;
+  const subscriptionId = 1;
+  const chainId = network.config.chainId!;
 
   beforeEach(async function () {
-    // Recupera l'account dal provider
-    [owner] = await ethers.getSigners();
-    console.log("owner: ", owner);
+    [owner, addr1] = await ethers.getSigners();
+    vrfCoordinatorV2Mock = await ethers.deployContract('VRFCoordinatorV2Mock', [
+      '250000000000000000',
+      1e9,
+    ]);
+    await vrfCoordinatorV2Mock.waitForDeployment();
 
-    // Qui, si presuppone che il contratto sia già deployato. Sostituisci 'myNftAddress' con l'indirizzo del tuo contratto deployato
-    const myNftAddress = "0x25a1e093ca3587A0eb54bCC9dE4B96633523CB73";
-    myNft = await ethers.getContractAt("MyNFT", myNftAddress) as MyNFT;
+    MyNFT = await ethers.deployContract('MyNFT');
+    await MyNFT.waitForDeployment();
   });
 
-  describe("Minting", function () {
-    it("Should mint an NFT to the owner", async function () {
-      const tokenURI = "ipfs://MyNFTYoga/";
-      const tx = await myNft.requestNewRandomNFT(tokenURI, { gasLimit: "500000" });
-      await tx.wait(); // Aspetta la conferma della transazione
-      expect(await myNft.ownerOf(0)).to.equal(owner.address);
+  describe('Deployment', function () {
+    it('Should correctly set the initial token counter to 0 ✅', async function () {
+      expect(await MyNFT.getTokenCounter()).to.equal(0);
+    });
+
+    it('Should have correct name and symbol ✅', async function () {
+      expect(await MyNFT.name()).to.equal('Random On Chain NFT');
+      expect(await MyNFT.symbol()).to.equal('RR');
     });
   });
 });
