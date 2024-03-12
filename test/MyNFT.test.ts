@@ -13,13 +13,13 @@ describe("MyNFT", function () {
     [owner, addr1, ...addrs] = await ethers.getSigners();
 
     // Qui, si presuppone che il contratto sia già deployato. Sostituisci 'myNftAddress' con l'indirizzo del tuo contratto deployato
-    const myNftAddress = "inserisci_qui_l_indirizzo_del_contratto";
+    const myNftAddress = "0x25a1e093ca3587A0eb54bCC9dE4B96633523CB73";
     myNft = await ethers.getContractAt("MyNFT", myNftAddress) as MyNFT;
   });
 
   describe("Minting", function () {
     it("Should mint an NFT to the owner", async function () {
-      const tokenURI = "http://mytokenlocation.com";
+      const tokenURI = "ipfs://MyNFTYoga/";
       await myNft.requestNewRandomNFT(tokenURI);
       expect(await myNft.ownerOf(0)).to.equal(owner.address);
     });

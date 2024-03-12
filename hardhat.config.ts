@@ -14,7 +14,8 @@ const config: HardhatUserConfig = {
     sepolia: {
       url: process.env.SEPOLIA_RPC_URL, // Assicurati che questa variabile d'ambiente sia definita nel tuo file .env
       accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
-      gasPrice: "auto" // Imposta il gasPrice su "auto"
+      gasPrice: "auto", // Imposta il gasPrice su "auto"
+      allowUnlimitedContractSize: true
     },
   },
 };
