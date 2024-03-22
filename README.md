@@ -9,7 +9,9 @@ Il contratto MyNFT permette agli utenti di partecipare a un mercato decentralizz
 Per utilizzare questo progetto, assicurati di avere installato:
 
 **Node.js** (versione 12.x o superiore)
+
 **npm** (versione 6.x o superiore) o yarn
+
 **Hardhat**
 
 ### Installazione 
