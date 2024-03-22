@@ -50,6 +50,29 @@ npx hardhat run --network <nomeRete> scripts/deploy.ts
 
 Assicurati di sostituire <nomeRete> con il nome della rete su cui intendi deployare, ad esempio localhost o sepolia.
 
+### Cambio Variabili
+
+Sostituire in deploy.ts e MyNFT.test.ts i seguenti parametri: 
+
+```solidity
+const subscriptionId = 1; // Numero subscription ID chainlink VRF
+```
+```solidity
+const VRFCoordinatorV2 = "sostituire con VRFCoordinatorV2 address di chainlink VRF della rete corretta (Sepolia/goerli ecc.)";
+```
+```solidity
+const gasLane = "sostituire con gasLane/Keyhash di chainlink VRF della rete corretta (Sepolia/goerli ecc.)";
+```
+```solidity
+const callbackGasLimit = 100000; // Placeholder, sostituire con il valore corretto
+```
+```solidity
+const mintFee = ethers.parseUnits("0.1", "ether");
+```
+```solidity
+const maxTokens = 10000; // Placeholder, definire il numero massimo di token
+```
+
 
 ## Scopo
 
