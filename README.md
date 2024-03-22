@@ -2,51 +2,7 @@
 
 ## Introduzione
 
-Il contratto MyNFT permette agli utenti di partecipare a un mercato decentralizzato di token non fungibili (NFT), mettendo in risalto l'unicità e la proprietà digitale. Gli utenti possono creare, acquistare e vendere NFT, ciascuno rappresentante un oggetto digitale unico, come arte, collezionabili e altro ancora. Questa piattaforma utilizza lo standard ERC-721 per garantire la compatibilità e la sicurezza nella gestione dei NFT.
-
-## Prerequisiti
-
-Per utilizzare questo progetto, assicurati di avere installato:
-
-**Node.js** (versione 12.x o superiore)
-**npm** (versione 6.x o superiore) o yarn
-**Hardhat**
-
-### Installazione 
-
-Clona il repository e installa le dipendenze:
-
-```zsh
-git clone https://github.com/Nicco6598/NFT-SmartContract.git
-cd NFT-SmartContract
-npm install
-```
-
-### Test
-
-Per eseguire i test automatizzati:
-
-```zsh
-npx hardhat test
-```
-
-### Avviare la Rete Locale
-
-Per avviare una blockchain locale per lo sviluppo e il testing:
-
-```zsh
-npx hardhat node
-```
-
-### Deploy del Contratto
-
-Per deployare il contratto sulla rete locale o su una rete di test, usa il seguente comando:
-
-```zsh
-npx hardhat run --network <nomeRete> scripts/deploy.ts
-```
-
-Assicurati di sostituire <nomeRete> con il nome della rete su cui intendi deployare, ad esempio localhost o sepolia.
+Il nostro contratto `MyNFT` consente agli utenti di interagire con un mercato decentralizzato di token non fungibili (NFT), enfatizzando l'unicità e la proprietà digitale. Gli utenti possono creare, acquistare e vendere NFT, ciascuno rappresentante un oggetto digitale unico, come arte, collezionabili, e altro ancora. La nostra piattaforma utilizza lo standard ERC-721 per garantire la compatibilità e la sicurezza nella gestione degli NFT.
 
 ## Scopo
 
